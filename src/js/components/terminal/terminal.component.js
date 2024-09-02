@@ -5,11 +5,11 @@
  * @version 1.0.0
  */
 
-//--- Template Elements ---//
+// --- Template Elements --- //
 import { cssTemplate } from './terminal.component.css.js'
 import { htmlTemplate } from './terminal.component.html.js'
 
-//--- Sub Components ---//
+// --- Sub Components --- //
 
 customElements.define('terminal-component',
   /**
