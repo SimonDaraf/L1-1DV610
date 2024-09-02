@@ -6,13 +6,12 @@
  */
 
 // --- Template Elements --- //
-import { cssTemplate } from './terminal.component.css.js'
-import { htmlTemplate } from './terminal.component.html.js'
+import { cssTemplate } from './editor.component.css.js'
+import { htmlTemplate } from './editor.component.html.js'
 
 // --- Sub Components --- //
-import './lib/editor/editor.component.js'
 
-customElements.define('terminal-component',
+customElements.define('editor-component',
   /**
    * Represents a terminal component element.
    */
