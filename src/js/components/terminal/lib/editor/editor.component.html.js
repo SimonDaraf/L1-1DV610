@@ -7,7 +7,7 @@ htmlTemplate.innerHTML = /*html*/`
     
     </div>
     <div class="editor-body">
-      <div id="editor-input" contenteditable="true" spellcheck="false"></div>
+      <div id="editor-input" contenteditable="true" spellcheck="false" wrap="off"></div>
     </div>
   </div>
 `
