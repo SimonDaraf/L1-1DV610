@@ -14,7 +14,7 @@ class Pointer {
   /**
    * Constructs an instance of a variable pointer.
    *
-   * @param {string} id - The unique id identifier.
+   * @param {string} id - The unique identifier.
    * @throws {Error} - If an instance of the abstract pointer class is instantiated soley.
    */
   constructor (id) {
@@ -48,7 +48,7 @@ class Pointer {
    * Returns a identical copy of the variable to be passed by value.
    *
    * @returns {*} - The identical variable copy.
-   * @param {string} id - The unique id identifier for the new value reference.
+   * @param {string} id - The unique identifier for the new value reference.
    * @throws {Error} - If method has no valid implementation.
    */
   passByValue (id) {
@@ -60,6 +60,8 @@ class Pointer {
 
 /**
  * Represents an integer data type.
+ *
+ * @augments Pointer
  */
 export class Integer extends Pointer {
   /**
@@ -73,12 +75,11 @@ export class Integer extends Pointer {
    * Constrcuts an integer variable.
    *
    * @param {number} value - The integer value.
-   * @param {string} id - The unique id identifier.
+   * @param {string} id - The unique identifier.
    * @throws {Error} - If assigned value is not an integer.
    */
   constructor (value, id) {
     super(id)
-
     this.setValue(value)
   }
 
@@ -91,7 +92,7 @@ export class Integer extends Pointer {
    */
   setValue (newValue) {
     if (!Number.isInteger(newValue)) {
-      throw new Error('Invalid value assigned to integer.')
+      throw new Error('Invalid value assigned to variable of type integer.')
     }
     this.#value = newValue
   }
@@ -115,5 +116,68 @@ export class Integer extends Pointer {
    */
   passByValue (id) {
     return new Integer(this.#value, id)
+  }
+}
+
+// --- STRING --- //
+
+/**
+ * represents a string data type.
+ *
+ * @augments Pointer
+ */
+export class CharacterCollection extends Pointer {
+  /**
+   * The string value.
+   *
+   * @type {string}
+   */
+  #value
+
+  /**
+   * Constructs an instance of the character collection class.
+   *
+   * @param {string} value - The string value.
+   * @param {string} id - The unique identifier.
+   * @throws {Error} - If assigned value is not a string.
+   */
+  constructor (value, id) {
+    super(id)
+    this.setValue(value)
+  }
+
+  /**
+   * Sets a new integer value.
+   *
+   * @override
+   * @param {string} newValue - The new string value.
+   * @throws {Error} - If assigned value is not a string.
+   */
+  setValue (newValue) {
+    if (typeof newValue !== 'string' || !(newValue instanceof String)) {
+      throw new Error('Invalid value assigned to variable of type string.')
+    }
+    this.#value = newValue
+  }
+
+  /**
+   * Returns the value of the string variable.
+   *
+   * @override
+   * @returns {string} - The string value.
+   */
+  getValue () {
+    return this.#value
+  }
+
+  /**
+   * Returns a new character collection copy of this instance.
+   *
+   * @override
+   * @param {string} id - The new unique id to be assigned to the copy.
+   * @returns {CharacterCollection} - The character collection copy.
+   */
+  passByValue (id) {
+    return new CharacterCollection(this.#value, id)
   }
 }
