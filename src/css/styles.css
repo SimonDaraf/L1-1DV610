@@ -1,3 +1,7 @@
+html, body {
+  box-sizing: border-box;
+}
+
 body {
   font-family: handjet;
   font-weight: 400;
@@ -6,4 +10,6 @@ body {
 	overflow: hidden;
   background-color: #151515;
   color: #ffffff;
+  height: 100vh;
+  width: 100vw;
 }
