@@ -21,10 +21,10 @@ export class EngineCompiler {
    * @returns {ExecutableBlock} - The executable block build from the raw input string.
    */
   #determineOperation (str) {
-    if (str.test(OperationPatterns.INT_DECLARATION)) { return this.#intDeclaration(str) }
-    if (str.test(OperationPatterns.STRING_DECLARATION)) { return this.#stringDeclaration(str) }
-    if (str.test(OperationPatterns.OPERATION_DECLARATION)) { return this.#operationDeclaration(str) }
-    if (str.test(OperationPatterns.VARIABLE_MODIFICATION)) { return this.#variableModification(str) }
+    if (OperationPatterns.INT_DECLARATION.test(str)) { return this.#intDeclaration(str) }
+    if (OperationPatterns.STRING_DECLARATION.test(str)) { return this.#stringDeclaration(str) }
+    if (OperationPatterns.OPERATION_DECLARATION.test(str)) { return this.#operationDeclaration(str) }
+    if (OperationPatterns.VARIABLE_MODIFICATION.test(str)) { return this.#variableModification(str) }
 
     throw new Error(`Invalid operation: <${str}>`)
   }
