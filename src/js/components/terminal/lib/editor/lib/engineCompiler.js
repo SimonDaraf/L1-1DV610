@@ -49,8 +49,17 @@ export class EngineCompiler {
  * An enum containing regex pattern related to available operations.
  */
 const OperationPatterns = Object.freeze({
-  INT_DECLARATION: /^int /,
-  STRING_DECLARATION: /^string /,
-  OPERATION_DECLARATION: /^[a-z][a-zA-Z0-9]*\((.*)\)$/,
-  VARIABLE_MODIFICATION: /^[a-z][a-zA-Z0-9]* /
+  INT_DECLARATION: /^ ?int /,
+  STRING_DECLARATION: /^ ?string /,
+  OPERATION_DECLARATION: /^ ?[a-z][a-zA-Z0-9]*\((.*)\)$/,
+  VARIABLE_MODIFICATION: /^ ?[a-z][a-zA-Z0-9]* /
+})
+
+/**
+ * An enum containing regex pattern related to int declaration formats.
+ */
+const DeclarationFormats = Object.freeze({
+  INT_DECLARATION_FORMAT: /^ ?int [az][a-zA-Z0-9]* = \d+( ?[+-] ?\d+)* ?$/,
+  STRING_DECLARATION_FORMAT: /^ ?string [a-z][a-zA-Z0-9]* = (" *[^"]* *"|' *[^']* *') ?$/,
+  VARIABLE_MODIFICATION_FORMAT: /^ ?[a-z][a-zA-Z0-9]* = \d+( ?[+-] ?\d)* ?$/
 })
