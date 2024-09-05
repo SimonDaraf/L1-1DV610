@@ -89,8 +89,6 @@ customElements.define('editor-component',
         event.stopPropagation()
         event.preventDefault()
 
-        this.#editorConsole.textContent = ''
-        this.#codeEngine.build(this.#editorInput.textContent)
         this.#codeEngine.run()
       }, { signal: this.#abortController.signal })
 
