@@ -75,7 +75,9 @@ export class CodeEngine extends EventTarget {
    * Executes the call stack.
    */
   run () {
+    this.#dispatchConsoleOutput('Executing...')
     this.#callStack.execute(this.#memoryHeap)
+    this.#dispatchConsoleOutput('Done executing...')
   }
 
   /**

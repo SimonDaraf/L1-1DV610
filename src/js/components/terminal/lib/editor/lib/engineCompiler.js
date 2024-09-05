@@ -111,7 +111,7 @@ export class EngineCompiler extends EventTarget {
 
   #stringDeclaration (str) {
     if (!DeclarationFormats.STRING_DECLARATION_FORMAT.test(str)) {
-      throw new Error(`Incorrect int declaration: ${str}`)
+      throw new Error(`Incorrect string declaration: ${str}`)
     }
 
     // Split input at "=" to separate the two halves of the statement.
@@ -129,7 +129,9 @@ export class EngineCompiler extends EventTarget {
     }))
 
     // Determine operation logic.
-    const operationVariables = operation.split(' ').map((x) => x.trim())
+    const operationVariables = operation.match(/"[^"]*"|'[^']*'|[^"' ]+/g)
+
+    console.log(operationVariables)
 
     const memoryDependencies = [variableID]
     const operationPairs = []
@@ -140,7 +142,12 @@ export class EngineCompiler extends EventTarget {
         operationSymbol = '='
       }
 
-      if (!(/(^".*"$|^'.*'$)/.test())) {
+      if (/^[+]$/.test(operationVariables[i])) {
+        operationSymbol = operationVariables[i]
+        continue
+      }
+
+      if (!/(^".*"$|^'.*'$)/.test(operationVariables[i])) {
         // If not a string. First check if it matches the pattern for a variable declaration.
         if (!NamingPatterns.VARIABLE_NAME.test(operationVariables[i])) {
           throw new Error(`${operationVariables[i]} is not a valid variable name.`)
@@ -191,9 +198,9 @@ const OperationPatterns = Object.freeze({
  * An enum containing regex pattern related to declaration formats.
  */
 const DeclarationFormats = Object.freeze({
-  INT_DECLARATION_FORMAT: /^ ?int [a-z][a-zA-Z0-9]* = \d+( ?[+-] ?\d+)* ?$/,
-  STRING_DECLARATION_FORMAT: /^ ?string [a-z][a-zA-Z0-9]* = (" *[^"]* *"|' *[^']* *') ?$/,
-  VARIABLE_MODIFICATION_FORMAT: /^ ?[a-z][a-zA-Z0-9]* = \d+( ?[+-] ?\d)* ?$/
+  INT_DECLARATION_FORMAT: /^ ?int [a-z][a-zA-Z0-9]* = \d+( [+-] \d+)* ?$/,
+  STRING_DECLARATION_FORMAT: /^ ?string [a-z][a-zA-Z0-9]* = (" *[^"]* *"|' *[^']* *')( [+] (" *[^"]* *"|' *[^']* *'))* ?$/,
+  VARIABLE_MODIFICATION_FORMAT: /^ ?[a-z][a-zA-Z0-9]* = \d+( [+-] \d)* ?$/
 })
 
 /**

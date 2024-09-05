@@ -163,7 +163,7 @@ export class CharacterCollection extends Pointer {
    * @throws {Error} - If assigned value is not a string.
    */
   setValue (newValue) {
-    if (typeof newValue !== 'string' || !(newValue instanceof String)) {
+    if (!(typeof newValue === 'string' || newValue instanceof String)) {
       throw new Error('Invalid value assigned to variable of type string.')
     }
     this.#value = newValue
