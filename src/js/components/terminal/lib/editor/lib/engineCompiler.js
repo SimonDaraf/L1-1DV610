@@ -5,9 +5,10 @@ import { Operation } from './operation.js'
 /**
  * Represents a code compiler.
  *
- * @event EngineCompiler#memory-allocation-request - Dispatched when a variable needs to be stored in memory.
+ * @event EngineCompiler#memoryAllocationRequest - Dispatched when a variable needs to be stored in memory.
+ * @event EngineCompiler#addToCallStack - Dispatched when an Execution block has been constructed
  */
-export class EngineCompiler {
+export class EngineCompiler extends EventTarget {
   /**
    * Compiles the given logical statements into an array of memory blocks.
    *
@@ -15,7 +16,15 @@ export class EngineCompiler {
    */
   compile (parsedData) {
     for (const str of parsedData) {
-      this.#determineOperation(str)
+      const execBlock = this.#determineOperation(str)
+
+      // Dispatch the add to call stack event to let the engine know a new execution has been made.
+      this.dispatchEvent(new CustomEvent('EngineCompiler#addToCallStack', {
+        bubbles: true,
+        detail: {
+          executionBlock: execBlock
+        }
+      }))
     }
   }
 
@@ -57,10 +66,10 @@ export class EngineCompiler {
     // If I'm not lazy I might do it. Or I could forget this comment and never come back to this.
     const intPointer = new dataTypes.Integer(0, variableID) // Set int to 0 when initializing.
 
-    dispatchEvent(new CustomEvent('EngineCompiler#memory-allocation-request'), {
+    this.dispatchEvent(new CustomEvent('EngineCompiler#memoryAllocationRequest', {
       bubbles: true,
-      detail: { content: intPointer }
-    })
+      detail: { pointer: intPointer }
+    }))
 
     // Determine operation logic.
     const operationVariables = operation.split(' ').map((x) => x.trim())
@@ -96,7 +105,7 @@ export class EngineCompiler {
     }
 
     // Build final operation string.
-    const finalOperation = Operation.constructIntModification(intPointer, ...operationPairs)
+    const finalOperation = Operation.constructIntModification(intPointer, ...operationVariables)
     return new ExecutableBlock(memoryDependencies, finalOperation)
   }
 
