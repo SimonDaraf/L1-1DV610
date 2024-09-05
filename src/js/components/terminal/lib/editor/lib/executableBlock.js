@@ -39,4 +39,11 @@ export class ExecutableBlock {
   getMemoryDependencies () {
     return [...this.#memoryDependencies] // return a shallow copy of the array.
   }
+
+  /**
+   * Executes the operation.
+   */
+  execute () {
+    this.#operation.call()
+  }
 }

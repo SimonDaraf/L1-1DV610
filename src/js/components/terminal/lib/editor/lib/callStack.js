@@ -35,6 +35,10 @@ export class CallStack {
    * @param {MemoryHeap} memoryHeap - The memory heap reference.
    */
   execute (memoryHeap) {
-    // TODO - Later
+    for (const executable of this.#executableBlocks) {
+      executable.execute()
+    }
+
+    console.log(memoryHeap)
   }
 }
