@@ -1,8 +1,11 @@
 import * as dataTypes from './dataTypes.js'
 import { ExecutableBlock } from './executableBlock.js'
+import { Operation } from './operation.js'
 
 /**
  * Represents a code compiler.
+ *
+ * @event EngineCompiler#memory-allocation-request - Dispatched when a variable needs to be stored in memory.
  */
 export class EngineCompiler {
   /**
@@ -11,6 +14,9 @@ export class EngineCompiler {
    * @param {string[]} parsedData - The parsed logical statement data.
    */
   compile (parsedData) {
+    for (const str of parsedData) {
+      this.#determineOperation(str)
+    }
   }
 
   /**
@@ -29,7 +35,69 @@ export class EngineCompiler {
     throw new Error(`Invalid operation: <${str}>`)
   }
 
+  /**
+   * Constrcuts a executable block to handle a integer declaration.
+   *
+   * @param {string} str - The raw input string.
+   * @returns {ExecutableBlock} - The executable block.
+   */
   #intDeclaration (str) {
+    if (!DeclarationFormats.INT_DECLARATION_FORMAT.test(str)) {
+      throw new Error(`Incorrect int declaration: ${str}`)
+    }
+
+    // Split input at "=" to separate the two halves of the statement.
+    const [declarator, operation] = str.split('=').map((x) => x.trim())
+
+    // Determine variable name by removing prefix.
+    const variableName = declarator.replace(/^int /i, '')
+    const variableID = btoa(variableName)
+
+    // At a later point it would be cool to actually initialize variable values during compilation.
+    // If I'm not lazy I might do it. Or I could forget this comment and never come back to this.
+    const intPointer = new dataTypes.Integer(0, variableID) // Set int to 0 when initializing.
+
+    dispatchEvent(new CustomEvent('EngineCompiler#memory-allocation-request'), {
+      bubbles: true,
+      detail: { content: intPointer }
+    })
+
+    // Determine operation logic.
+    const operationVariables = operation.split(' ').map((x) => x.trim())
+
+    const memoryDependencies = [variableID]
+    const operationPairs = []
+    let operationSymbol = ''
+
+    for (let i = 0; i < operationVariables.length; i++) {
+      if (i === 0) {
+        operationSymbol = '='
+        continue
+      }
+
+      if (/^[+-]$/.test(operationVariables[i])) {
+        operationSymbol = operationVariables[i]
+        continue
+      }
+
+      if (!dataTypes.isStrictInteger(operationVariables[i])) {
+        // If not an integer. First check if it matches the pattern for a variable declaration.
+        if (!NamingPatterns.VARIABLE_NAME.test(operationVariables[i])) {
+          throw new Error(`${operationVariables[i]} is not a valid variable name.`)
+        }
+        // If it is a valid variable name. Add it to the memory dependency.
+        memoryDependencies.push(btoa(operationVariables[i]))
+
+        // add something to access heap and get reference to variable getter.
+      }
+
+      const operationPair = Operation.createIntOperationPair(operationSymbol, operationVariables[i])
+      operationPairs.push(operationPair)
+    }
+
+    // Build final operation string.
+    const finalOperation = Operation.constructIntModification(intPointer, ...operationPairs)
+    return new ExecutableBlock(memoryDependencies, finalOperation)
   }
 
   #stringDeclaration (str) {
@@ -56,10 +124,17 @@ const OperationPatterns = Object.freeze({
 })
 
 /**
- * An enum containing regex pattern related to int declaration formats.
+ * An enum containing regex pattern related to declaration formats.
  */
 const DeclarationFormats = Object.freeze({
-  INT_DECLARATION_FORMAT: /^ ?int [az][a-zA-Z0-9]* = \d+( ?[+-] ?\d+)* ?$/,
+  INT_DECLARATION_FORMAT: /^ ?int [a-z][a-zA-Z0-9]* = \d+( ?[+-] ?\d+)* ?$/,
   STRING_DECLARATION_FORMAT: /^ ?string [a-z][a-zA-Z0-9]* = (" *[^"]* *"|' *[^']* *') ?$/,
   VARIABLE_MODIFICATION_FORMAT: /^ ?[a-z][a-zA-Z0-9]* = \d+( ?[+-] ?\d)* ?$/
+})
+
+/**
+ * An enum containing regex pattern related to naming patterns.
+ */
+const NamingPatterns = Object.freeze({
+  VARIABLE_NAME: /^[a-z][a-zA-Z0-9]*$/
 })
