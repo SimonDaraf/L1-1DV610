@@ -59,4 +59,11 @@ export class MemoryHeap {
     // If no memory reference was found we throw an error and let the engine handle it so it can be conveyed to the user.
     throw new Error(`Invalid memory reference: ${pointerID}`)
   }
+
+  /**
+   * Clears the memory.
+   */
+  clearMemory () {
+    this.#memoryPointers = []
+  }
 }
