@@ -10,6 +10,7 @@ import { cssTemplate } from './editor.component.css.js'
 import { htmlTemplate } from './editor.component.html.js'
 
 // --- Sub Components --- //
+import { CodeEngine } from './lib/codeEngine.js'
 
 customElements.define('editor-component',
   /**
@@ -31,6 +32,34 @@ customElements.define('editor-component',
     #editorInput
 
     /**
+     * The editor console element.
+     *
+     * @type {HTMLElement}
+     */
+    #editorConsole
+
+    /**
+     * The run button.
+     *
+     * @type {HTMLElement}
+     */
+    #runButton
+
+    /**
+     * The build button.
+     *
+     * @type {HTMLElement}
+     */
+    #buildButton
+
+    /**
+     * The code engine.
+     *
+     * @type {CodeEngine}
+     */
+    #codeEngine
+
+    /**
      * Creates an instance of the terminal-component element.
      */
     constructor () {
@@ -43,19 +72,54 @@ customElements.define('editor-component',
       this.shadowRoot.appendChild(htmlTemplate.content.cloneNode(true))
 
       this.#editorInput = this.shadowRoot.querySelector('#editor-input')
+      this.#editorConsole = this.shadowRoot.querySelector('.editor-console')
+      this.#runButton = this.shadowRoot.querySelector('#button-run')
+      this.#buildButton = this.shadowRoot.querySelector('#button-build')
 
       this.#abortController = new AbortController()
+
+      this.#codeEngine = new CodeEngine()
     }
 
     /**
      * Called after the element is inserted into the DOM.
      */
     connectedCallback () {
-      this.#editorInput.addEventListener('keyup', (event) => {
+      this.#runButton.addEventListener('click', (event) => {
         event.stopPropagation()
         event.preventDefault()
-        console.log('changed')
+
+        this.#editorConsole.textContent = ''
+        this.#codeEngine.build(this.#editorInput.textContent)
+        this.#codeEngine.run()
       }, { signal: this.#abortController.signal })
+
+      this.#buildButton.addEventListener('click', (event) => {
+        event.stopPropagation()
+        event.preventDefault()
+
+        this.#editorConsole.textContent = ''
+        this.#codeEngine.build(this.#editorInput.textContent)
+      }, { signal: this.#abortController.signal })
+
+      this.#codeEngine.addEventListener('CodeEngine#error', (event) => {
+        event.stopPropagation()
+
+        const errorElem = document.createElement('div')
+        errorElem.textContent = event.detail.error
+        errorElem.classList.add('console-error')
+
+        this.#editorConsole.appendChild(errorElem)
+      })
+
+      this.#codeEngine.addEventListener('CodeEngine#output', (event) => {
+        event.stopPropagation()
+
+        const outputElem = document.createElement('div')
+        outputElem.textContent = event.detail.message
+
+        this.#editorConsole.appendChild(outputElem)
+      })
     }
 
     /**

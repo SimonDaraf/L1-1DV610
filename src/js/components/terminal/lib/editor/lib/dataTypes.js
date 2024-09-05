@@ -3,7 +3,7 @@
 /**
  * An abstract pointer class.
  */
-class Pointer {
+export class Pointer {
   /**
    * A unique identifier.
    *
@@ -23,6 +23,15 @@ class Pointer {
     }
 
     this.#id = id
+  }
+
+  /**
+   * Returns the pointer id.
+   *
+   * @returns {string} - The pointer id.
+   */
+  getID () {
+    return this.#id
   }
 
   /**
@@ -122,7 +131,7 @@ export class Integer extends Pointer {
 // --- STRING --- //
 
 /**
- * represents a string data type.
+ * Represents a string data type.
  *
  * @augments Pointer
  */
@@ -180,4 +189,18 @@ export class CharacterCollection extends Pointer {
   passByValue (id) {
     return new CharacterCollection(this.#value, id)
   }
+}
+
+// --- HELPER FUNCTIONS --- //
+
+/**
+ * Determines whether a string is strictly an integer.
+ * Necessary due to hexadecimal cases being seen as integers (JavaScript classic).
+ *
+ * @param {string} str - The string to be determined.
+ * @returns {boolean} - An indication whether the string is an integer.
+ */
+export const isStrictInteger = function (str) {
+  const parsed = Number.parseInt(str, 10)
+  return Number.isInteger(parsed) && String(parsed) === str.trim()
 }

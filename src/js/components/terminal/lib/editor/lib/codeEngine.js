@@ -65,7 +65,17 @@ export class CodeEngine extends EventTarget {
    * @param {string} codeBlock - The code block to be parsed.
    */
   build (codeBlock) {
+    this.#dispatchConsoleOutput('Build started...')
+    this.#memoryHeap.clearMemory()
     this.#buildMemoryHeap(this.#parse(codeBlock))
+    this.#dispatchConsoleOutput('Build finished...')
+  }
+
+  /**
+   * Executes the call stack.
+   */
+  run () {
+    this.#callStack.execute(this.#memoryHeap)
   }
 
   /**
@@ -77,7 +87,7 @@ export class CodeEngine extends EventTarget {
     try {
       this.#engineCompiler.compile(parsedData)
     } catch (e) {
-      console.log(e)
+      this.#dispatchError(e)
     }
   }
 
@@ -91,5 +101,31 @@ export class CodeEngine extends EventTarget {
     return codeBlock.split(/(?=<)|(?<=>)/)
       .filter(str => /^<.*>$/.test(str))
       .map(str => str.replace(/[<>]/g, ''))
+  }
+
+  /**
+   * Dispatches a console output event.
+   *
+   * @param {string} str - The message to be output.
+   */
+  #dispatchConsoleOutput (str) {
+    this.dispatchEvent(new CustomEvent('CodeEngine#output', {
+      detail: {
+        message: str
+      }
+    }))
+  }
+
+  /**
+   * Dispatches an error event.
+   *
+   * @param {Error} e - The error interface.
+   */
+  #dispatchError (e) {
+    this.dispatchEvent(new CustomEvent('CodeEngine#error', {
+      detail: {
+        error: e
+      }
+    }))
   }
 }

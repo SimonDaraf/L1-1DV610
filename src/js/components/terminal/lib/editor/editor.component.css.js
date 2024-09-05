@@ -9,6 +9,10 @@ cssTemplate.innerHTML = /*css*/`
       width: 100%;
     }
 
+    .console-error {
+      color: red;
+    }
+
     .editor-container {
       display: flex;
       flex-direction: column;
@@ -51,7 +55,8 @@ cssTemplate.innerHTML = /*css*/`
       border-radius: 10px;
       padding: 10px;
       color: #ffffff;
-      font-size: 36px;
+      font-size: 18px;
+      overflow-y: auto;
     }
 
     #editor-input {
@@ -64,7 +69,8 @@ cssTemplate.innerHTML = /*css*/`
       border-radius: 10px;
       padding: 10px;
       color: #ffffff;
-      font-size: 36px;
+      font-size: 18px;
+      overflow-y: auto;
     }
   </style>
 `
