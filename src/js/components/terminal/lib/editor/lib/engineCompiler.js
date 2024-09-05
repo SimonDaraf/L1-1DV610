@@ -110,7 +110,62 @@ export class EngineCompiler extends EventTarget {
   }
 
   #stringDeclaration (str) {
+    if (!DeclarationFormats.STRING_DECLARATION_FORMAT.test(str)) {
+      throw new Error(`Incorrect int declaration: ${str}`)
+    }
 
+    // Split input at "=" to separate the two halves of the statement.
+    const [declarator, operation] = str.split('=').map((x) => x.trim())
+
+    // Determine variable name by removing prefix.
+    const variableName = declarator.replace(/^string /i, '')
+    const variableID = btoa(variableName)
+
+    const stringPointer = new dataTypes.CharacterCollection('', variableID) // Set value to empty string when initializing.
+
+    this.dispatchEvent(new CustomEvent('EngineCompiler#memoryAllocationRequest', {
+      bubbles: true,
+      detail: { pointer: stringPointer }
+    }))
+
+    // Determine operation logic.
+    const operationVariables = operation.split(' ').map((x) => x.trim())
+
+    const memoryDependencies = [variableID]
+    const operationPairs = []
+    let operationSymbol = ''
+
+    for (let i = 0; i < operationVariables.length; i++) {
+      if (i === 0) {
+        operationSymbol = '='
+      }
+
+      if (!(/(^".*"$|^'.*'$)/.test())) {
+        // If not a string. First check if it matches the pattern for a variable declaration.
+        if (!NamingPatterns.VARIABLE_NAME.test(operationVariables[i])) {
+          throw new Error(`${operationVariables[i]} is not a valid variable name.`)
+        }
+        // If it is a valid variable name. Add it to the memory dependency.
+        memoryDependencies.push(btoa(operationVariables[i]))
+
+        // add something to access heap and get reference to variable getter.
+      } else {
+        // Remove either single or double quote depending on what the string is constructed with.
+        if (operationVariables[i].startsWith("'") && operationVariables[i].endsWith("'")) {
+          operationVariables[i] = operationVariables[i].replace(/'/g, '')
+        } else if (operationVariables[i].startsWith('"') && operationVariables[i].endsWith('"')) {
+          operationVariables[i] = operationVariables[i].replace(/"/g, '')
+        }
+      }
+
+      const operationPair = Operation.createStringOperationPair(operationSymbol, operationVariables[i])
+      console.log(operationPair)
+      operationPairs.push(operationPair)
+    }
+
+    // Build final operation string.
+    const finalOperation = Operation.constructStringModification(stringPointer, ...operationPairs)
+    return new ExecutableBlock(memoryDependencies, finalOperation)
   }
 
   #operationDeclaration (str) {
