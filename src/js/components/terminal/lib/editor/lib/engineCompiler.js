@@ -81,7 +81,6 @@ export class EngineCompiler extends EventTarget {
     for (let i = 0; i < operationVariables.length; i++) {
       if (i === 0) {
         operationSymbol = '='
-        continue
       }
 
       if (/^[+-]$/.test(operationVariables[i])) {
@@ -101,11 +100,12 @@ export class EngineCompiler extends EventTarget {
       }
 
       const operationPair = Operation.createIntOperationPair(operationSymbol, operationVariables[i])
+      console.log(operationPair)
       operationPairs.push(operationPair)
     }
 
     // Build final operation string.
-    const finalOperation = Operation.constructIntModification(intPointer, ...operationVariables)
+    const finalOperation = Operation.constructIntModification(intPointer, ...operationPairs)
     return new ExecutableBlock(memoryDependencies, finalOperation)
   }
 
