@@ -45,15 +45,11 @@ export class CodeEngine extends EventTarget {
     this.#engineCompiler.addEventListener('EngineCompiler#memoryAllocationRequest', (event) => {
       event.stopPropagation()
 
-      console.log(event.detail.pointer)
-
       this.#memoryHeap.addMemoryReference(event.detail.pointer)
     })
 
     this.#engineCompiler.addEventListener('EngineCompiler#addToCallStack', (event) => {
       event.stopPropagation()
-
-      console.log(event.detail.executionBlock)
 
       this.#callStack.addExecutableBlock(event.detail.executionBlock)
     })

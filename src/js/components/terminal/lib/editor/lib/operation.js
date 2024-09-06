@@ -88,7 +88,6 @@ export class Operation {
    *
    * @param {string} operationSymbol - The operation symbol.
    * @param {string|number} operationValue - The operation value, must be a valid integer.
-   * @throws {Error} - If value is not a strict integer.
    * @throws {Error} - If no valid operation symbol was provided.
    * @returns {OperationPair} - The operation pair constructed from symbol and value.
    */

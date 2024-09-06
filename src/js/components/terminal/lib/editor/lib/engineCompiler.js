@@ -96,8 +96,6 @@ export class EngineCompiler extends EventTarget {
           throw new Error(`${val} is not a valid variable name.`)
         }
 
-        // If it is a valid variable name. Add it to the memory dependency.
-
         // This hack allows the listener to populate the array with the reference requested.
         // Better than exposing the heap directly to this class.
         const tempMemoryRef = []
@@ -169,24 +167,40 @@ export class EngineCompiler extends EventTarget {
         continue
       }
 
-      if (!/(^".*"$|^'.*'$)/.test(operationVariables[i])) {
+      let val = operationVariables[i]
+
+      if (!/(^".*"$|^'.*'$)/.test(val)) {
         // If not a string. First check if it matches the pattern for a variable declaration.
-        if (!NamingPatterns.VARIABLE_NAME.test(operationVariables[i])) {
-          throw new Error(`${operationVariables[i]} is not a valid variable name.`)
+        if (!NamingPatterns.VARIABLE_NAME.test(val)) {
+          throw new Error(`${val} is not a valid variable name.`)
         }
-        // If it is a valid variable name. Add it to the memory dependency.
-        memoryDependencies.push(btoa(operationVariables[i]))
+        // This hack allows the listener to populate the array with the reference requested.
+        // Better than exposing the heap directly to this class.
+        const tempMemoryRef = []
+        this.dispatchEvent(new CustomEvent('EngineCompiler#requestMemoryReference', {
+          bubbles: true,
+          detail: {
+            memoryHolder: tempMemoryRef,
+            requestID: btoa(val)
+          }
+        }))
+
+        if (!tempMemoryRef[0]) {
+          throw new Error(`No reference for ${val} found.`)
+        }
+
+        memoryDependencies.push(tempMemoryRef[0])
+        val = tempMemoryRef[0]
       } else {
         // Remove either single or double quote depending on what the string is constructed with.
-        if (operationVariables[i].startsWith("'") && operationVariables[i].endsWith("'")) {
-          operationVariables[i] = operationVariables[i].replace(/'/g, '')
-        } else if (operationVariables[i].startsWith('"') && operationVariables[i].endsWith('"')) {
-          operationVariables[i] = operationVariables[i].replace(/"/g, '')
+        if (val.startsWith("'") && val.endsWith("'")) {
+          val = val.replace(/'/g, '')
+        } else if (val.startsWith('"') && val.endsWith('"')) {
+          val = val.replace(/"/g, '')
         }
       }
 
-      const operationPair = Operation.createStringOperationPair(operationSymbol, operationVariables[i])
-      console.log(operationPair)
+      const operationPair = Operation.createStringOperationPair(operationSymbol, val)
       operationPairs.push(operationPair)
     }
 
@@ -230,24 +244,41 @@ export class EngineCompiler extends EventTarget {
         continue
       }
 
-      if (!/(^".*"$|^'.*'$|\d+)/.test(operationVariables[i])) {
+      let val = operationVariables[i]
+
+      if (!/(^".*"$|^'.*'$|\d+)/.test(val)) {
         // If not a string or integer. First check if it matches the pattern for a variable declaration.
-        if (!NamingPatterns.VARIABLE_NAME.test(operationVariables[i])) {
-          throw new Error(`${operationVariables[i]} is not a valid variable name.`)
+        if (!NamingPatterns.VARIABLE_NAME.test(val)) {
+          throw new Error(`${val} is not a valid variable name.`)
         }
-        // If it is a valid variable name. Add it to the memory dependency.
-        memoryDependencies.push(btoa(operationVariables[i]))
+
+        // This hack allows the listener to populate the array with the reference requested.
+        // Better than exposing the heap directly to this class.
+        const tempMemoryRef = []
+        this.dispatchEvent(new CustomEvent('EngineCompiler#requestMemoryReference', {
+          bubbles: true,
+          detail: {
+            memoryHolder: tempMemoryRef,
+            requestID: btoa(val)
+          }
+        }))
+
+        if (!tempMemoryRef[0]) {
+          throw new Error(`No reference for ${val} found.`)
+        }
+
+        memoryDependencies.push(tempMemoryRef[0])
+        val = tempMemoryRef[0]
       } else {
         // Remove either single or double quote depending on what the string is constructed with.
-        if (operationVariables[i].startsWith("'") && operationVariables[i].endsWith("'")) {
-          operationVariables[i] = operationVariables[i].replace(/'/g, '')
-        } else if (operationVariables[i].startsWith('"') && operationVariables[i].endsWith('"')) {
-          operationVariables[i] = operationVariables[i].replace(/"/g, '')
+        if (val.startsWith("'") && val.endsWith("'")) {
+          val = val.replace(/'/g, '')
+        } else if (val.startsWith('"') && val.endsWith('"')) {
+          val = val.replace(/"/g, '')
         }
       }
 
-      const operationPair = Operation.createStringOperationPair(operationSymbol, operationVariables[i])
-      console.log(operationPair)
+      const operationPair = Operation.createStringOperationPair(operationSymbol, val)
       operationPairs.push(operationPair)
     }
 
@@ -274,8 +305,8 @@ const OperationPatterns = Object.freeze({
  */
 const DeclarationFormats = Object.freeze({
   INT_DECLARATION_FORMAT: /^ ?int [a-z][a-zA-Z0-9]* = (\d+|[a-z][a-zA-Z0-9]*)( [+-] (\d+|[a-z][a-zA-Z0-9]*))* ?$/,
-  STRING_DECLARATION_FORMAT: /^ ?string [a-z][a-zA-Z0-9]* = (" *[^"]* *"|' *[^']* *')( [+] (" *[^"]* *"|' *[^']* *'))* ?$/,
-  INLINE_OPERATION: /^ ?(" *[^"]* *"|' *[^']* *'|\d+)( [+] (" *[^"]* *"|' *[^']* *'|\d+))* ?$/
+  STRING_DECLARATION_FORMAT: /^ ?string [a-z][a-zA-Z0-9]* = (" *[^"]* *"|' *[^']* *'|[a-z][a-zA-Z0-9]*)( [+] (" *[^"]* *"|' *[^']* *'|[a-z][a-zA-Z0-9]*))* ?$/,
+  INLINE_OPERATION: /^ ?(" *[^"]* *"|' *[^']* *'|\d+|[a-z][a-zA-Z0-9]*)( [+] (" *[^"]* *"|' *[^']* *'|\d+|[a-z][a-zA-Z0-9]*))* ?$/
 })
 
 /**
