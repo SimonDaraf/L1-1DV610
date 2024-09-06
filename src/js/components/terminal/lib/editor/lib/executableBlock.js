@@ -42,8 +42,12 @@ export class ExecutableBlock {
 
   /**
    * Executes the operation.
+   *
+   * @returns {object} - The executable block result object.
+   * Key: value - Holds the result value from the operation.
+   * Key: outputToConsole - A boolean indicating whether to output value to console.
    */
   execute () {
-    this.#operation.call()
+    return this.#operation.call()
   }
 }

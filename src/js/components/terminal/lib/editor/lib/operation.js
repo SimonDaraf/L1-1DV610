@@ -1,4 +1,5 @@
 import * as dataTypes from './dataTypes.js'
+import { ExecutableBlock } from './executableBlock.js'
 
 /**
  * The operation class hold a number of static methods that allows the compiler and engine to construct logical operations.
@@ -37,6 +38,12 @@ export class Operation {
 
       // Set destination value.
       dest.setValue(finalValue)
+
+      // The return object holds both the value and an indication on whether the value should be output to the console.
+      return {
+        value: dest.getValue(),
+        outputToConsole: false
+      }
     }
   }
 
@@ -67,6 +74,12 @@ export class Operation {
 
       // Set destination value.
       dest.setValue(finalValue)
+
+      // The return object holds both the value and an indication on whether the value should be output to the console.
+      return {
+        value: dest.getValue(),
+        outputToConsole: false
+      }
     }
   }
 
@@ -115,6 +128,29 @@ export class Operation {
         throw new Error(`${operationSymbol} is not a valid operation.`)
     }
   }
+
+  /**
+   * Returns a system operation based on input.
+   *
+   * @param {string} command - The system operation command.
+   * @param {ExecutableBlock} inlineOperation - The inline operation to execute.
+   * @throws {Error} - If no valid system operations were found.
+   * @returns {Function} - The system operation.
+   */
+  static tryGetSystemOperation (command, inlineOperation) {
+    switch (command) {
+      case 'output':
+        return function () {
+          // The return object holds both the value and an indication on whether the value should be output to the console.
+          return {
+            value: inlineOperation.execute().value,
+            outputToConsole: true
+          }
+        }
+      default:
+        throw new Error(`Invalid system operation: ${command}`)
+    }
+  }
 }
 
 /**
@@ -131,7 +167,7 @@ class OperationPair {
   /**
    * An enum signaling the type of operation.
    *
-   * @type {object} - The MathematicalOperations enum.
+   * @type {number} - The operation enum.
    */
   #operation
 
