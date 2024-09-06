@@ -88,10 +88,12 @@ export class EngineCompiler extends EventTarget {
         continue
       }
 
-      if (!dataTypes.isStrictInteger(operationVariables[i])) {
+      let val = operationVariables[i]
+
+      if (!dataTypes.isStrictInteger(val)) {
         // If not an integer. First check if it matches the pattern for a variable declaration.
-        if (!NamingPatterns.VARIABLE_NAME.test(operationVariables[i])) {
-          throw new Error(`${operationVariables[i]} is not a valid variable name.`)
+        if (!NamingPatterns.VARIABLE_NAME.test(val)) {
+          throw new Error(`${val} is not a valid variable name.`)
         }
 
         // If it is a valid variable name. Add it to the memory dependency.
@@ -103,20 +105,19 @@ export class EngineCompiler extends EventTarget {
           bubbles: true,
           detail: {
             memoryHolder: tempMemoryRef,
-            requestID: btoa(operationVariables)
+            requestID: btoa(val)
           }
         }))
 
         if (!tempMemoryRef[0]) {
-          throw new Error(`No reference for ${operationVariables[i]} found.`)
+          throw new Error(`No reference for ${val} found.`)
         }
 
-        console.log('memory ref: ' + tempMemoryRef[0])
         memoryDependencies.push(tempMemoryRef[0])
+        val = tempMemoryRef[0]
       }
 
-      const operationPair = Operation.createIntOperationPair(operationSymbol, operationVariables[i])
-      console.log(operationPair)
+      const operationPair = Operation.createIntOperationPair(operationSymbol, val)
       operationPairs.push(operationPair)
     }
 

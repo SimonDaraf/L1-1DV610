@@ -93,18 +93,23 @@ export class Operation {
    * @returns {OperationPair} - The operation pair constructed from symbol and value.
    */
   static createIntOperationPair (operationSymbol, operationValue) {
-    if (!dataTypes.isStrictInteger(operationValue)) {
-      throw new Error(`${operationValue} is not a valid integer.`)
+    let val
+
+    if (dataTypes.isStrictInteger(operationValue)) {
+      val = Number.parseInt(operationValue)
+    } else {
+      val = operationValue
     }
+
     switch (operationSymbol) {
       case '=':
-        return new OperationPair(Number.parseInt(operationValue), MathematicalOperations.EQUAL)
+        return new OperationPair(val, MathematicalOperations.EQUAL)
       case '+':
-        return new OperationPair(Number.parseInt(operationValue), MathematicalOperations.ADD)
+        return new OperationPair(val, MathematicalOperations.ADD)
       case '-':
-        return new OperationPair(Number.parseInt(operationValue), MathematicalOperations.SUBTRACT)
+        return new OperationPair(val, MathematicalOperations.SUBTRACT)
       case '*':
-        return new OperationPair(Number.parseInt(operationValue), MathematicalOperations.MULTIPLY)
+        return new OperationPair(val, MathematicalOperations.MULTIPLY)
       default:
         throw new Error(`${operationSymbol} is not a valid operation.`)
     }
@@ -160,7 +165,7 @@ class OperationPair {
   /**
    * The value to be associated with the operation.
    *
-   * @type {number|string}
+   * @type {number|string|dataTypes.Pointer}
    */
   #value
 
@@ -174,7 +179,7 @@ class OperationPair {
   /**
    * Constructs an instance of the operation pair.
    *
-   * @param {number|string} value - The value associated with the operation.
+   * @param {number|string|dataTypes.Pointer} value - The value associated with the operation.
    * @param {object} operation - The MathematicalOperations enum.
    */
   constructor (value, operation) {
@@ -188,7 +193,12 @@ class OperationPair {
    * @returns {number|string} - The value.
    */
   getValue () {
-    return this.#value
+    if (this.#value instanceof dataTypes.Pointer) {
+      // If a pointer is stored we need to first access value.
+      return this.#value.getValue()
+    } else {
+      return this.#value
+    }
   }
 
   /**
