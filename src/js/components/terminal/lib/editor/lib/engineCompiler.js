@@ -39,7 +39,6 @@ export class EngineCompiler extends EventTarget {
     if (OperationPatterns.INT_DECLARATION.test(str)) { return this.#intDeclaration(str) }
     if (OperationPatterns.STRING_DECLARATION.test(str)) { return this.#stringDeclaration(str) }
     if (OperationPatterns.OPERATION_DECLARATION.test(str)) { return this.#operationDeclaration(str) }
-    if (OperationPatterns.VARIABLE_MODIFICATION.test(str)) { return this.#variableModification(str) }
 
     throw new Error(`Invalid operation: <${str}>`)
   }
@@ -109,6 +108,13 @@ export class EngineCompiler extends EventTarget {
     return new ExecutableBlock(memoryDependencies, finalOperation)
   }
 
+  /**
+   * Determines the operation based on the raw input string.
+   *
+   * @param {string} str - The input string.
+   * @throws {Error} - If no valid operation could be extracted from the raw input.
+   * @returns {ExecutableBlock} - The executable block build from the raw input string.
+   */
   #stringDeclaration (str) {
     if (!DeclarationFormats.STRING_DECLARATION_FORMAT.test(str)) {
       throw new Error(`Incorrect string declaration: ${str}`)
@@ -131,8 +137,6 @@ export class EngineCompiler extends EventTarget {
     // Determine operation logic.
     const operationVariables = operation.match(/"[^"]*"|'[^']*'|[^"' ]+/g)
 
-    console.log(operationVariables)
-
     const memoryDependencies = [variableID]
     const operationPairs = []
     let operationSymbol = ''
@@ -154,8 +158,6 @@ export class EngineCompiler extends EventTarget {
         }
         // If it is a valid variable name. Add it to the memory dependency.
         memoryDependencies.push(btoa(operationVariables[i]))
-
-        // add something to access heap and get reference to variable getter.
       } else {
         // Remove either single or double quote depending on what the string is constructed with.
         if (operationVariables[i].startsWith("'") && operationVariables[i].endsWith("'")) {
@@ -175,12 +177,68 @@ export class EngineCompiler extends EventTarget {
     return new ExecutableBlock(memoryDependencies, finalOperation)
   }
 
+  /**
+   * Determines the operation based on the raw input string.
+   *
+   * @param {string} str - The input string.
+   * @throws {Error} - If no valid operation could be extracted from the raw input.
+   * @returns {ExecutableBlock} - The executable block build from the raw input string.
+   */
   #operationDeclaration (str) {
+    // Skip first element as it is the full match.
+    const [, command, expression] = str.match(/([a-z][a-zA-Z0-9]*)\((.*?)\)/)
 
-  }
+    if (!DeclarationFormats.INLINE_OPERATION.test(expression)) {
+      throw new Error(`Invalid operation: ${expression}`)
+    }
 
-  #variableModification (str) {
+    // Determine operation logic.
+    const operationVariables = expression.match(/"[^"]*"|'[^']*'|\d+|[+]|[^"' ]+/g)
+    const memoryDependencies = []
+    const operationPairs = []
+    let operationSymbol = ''
 
+    // We need a temp pointer in order to store the modification.
+    const tempString = new dataTypes.CharacterCollection('', 'temp')
+    memoryDependencies.push(tempString)
+
+    for (let i = 0; i < operationVariables.length; i++) {
+      if (i === 0) {
+        operationSymbol = '='
+      }
+
+      if (/^[+]$/.test(operationVariables[i])) {
+        operationSymbol = operationVariables[i]
+        continue
+      }
+
+      if (!/(^".*"$|^'.*'$|\d+)/.test(operationVariables[i])) {
+        // If not a string or integer. First check if it matches the pattern for a variable declaration.
+        if (!NamingPatterns.VARIABLE_NAME.test(operationVariables[i])) {
+          throw new Error(`${operationVariables[i]} is not a valid variable name.`)
+        }
+        // If it is a valid variable name. Add it to the memory dependency.
+        memoryDependencies.push(btoa(operationVariables[i]))
+      } else {
+        // Remove either single or double quote depending on what the string is constructed with.
+        if (operationVariables[i].startsWith("'") && operationVariables[i].endsWith("'")) {
+          operationVariables[i] = operationVariables[i].replace(/'/g, '')
+        } else if (operationVariables[i].startsWith('"') && operationVariables[i].endsWith('"')) {
+          operationVariables[i] = operationVariables[i].replace(/"/g, '')
+        }
+      }
+
+      const operationPair = Operation.createStringOperationPair(operationSymbol, operationVariables[i])
+      console.log(operationPair)
+      operationPairs.push(operationPair)
+    }
+
+    // Construct operation chain.
+    const inlineOperation = Operation.constructStringModification(tempString, ...operationPairs)
+    const inlineExecBlock = new ExecutableBlock(memoryDependencies, inlineOperation)
+    const outputOperation = Operation.tryGetSystemOperation(command, inlineExecBlock)
+
+    return new ExecutableBlock([], outputOperation)
   }
 }
 
@@ -190,8 +248,7 @@ export class EngineCompiler extends EventTarget {
 const OperationPatterns = Object.freeze({
   INT_DECLARATION: /^ ?int /,
   STRING_DECLARATION: /^ ?string /,
-  OPERATION_DECLARATION: /^ ?[a-z][a-zA-Z0-9]*\((.*)\)$/,
-  VARIABLE_MODIFICATION: /^ ?[a-z][a-zA-Z0-9]* /
+  OPERATION_DECLARATION: /^ ?[a-z][a-zA-Z0-9]*\((.*)\) ?$/
 })
 
 /**
@@ -200,7 +257,7 @@ const OperationPatterns = Object.freeze({
 const DeclarationFormats = Object.freeze({
   INT_DECLARATION_FORMAT: /^ ?int [a-z][a-zA-Z0-9]* = \d+( [+-] \d+)* ?$/,
   STRING_DECLARATION_FORMAT: /^ ?string [a-z][a-zA-Z0-9]* = (" *[^"]* *"|' *[^']* *')( [+] (" *[^"]* *"|' *[^']* *'))* ?$/,
-  VARIABLE_MODIFICATION_FORMAT: /^ ?[a-z][a-zA-Z0-9]* = \d+( [+-] \d)* ?$/
+  INLINE_OPERATION: /^ ?(" *[^"]* *"|' *[^']* *'|\d+)( [+] (" *[^"]* *"|' *[^']* *'|\d+))* ?$/
 })
 
 /**
