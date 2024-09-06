@@ -62,10 +62,10 @@ export class Operation {
         // Determine operation based on enum.
         switch (variable.getOperation()) {
           case MathematicalOperations.EQUAL:
-            finalValue = variable.getValue()
+            finalValue = String(variable.getValue())
             break
           case MathematicalOperations.ADD:
-            finalValue += variable.getValue()
+            finalValue += String(variable.getValue())
             break
           default:
             throw new Error(`Fatal Error: invalid operator supplied. Operation index: ${variable.getOperation()}`)
