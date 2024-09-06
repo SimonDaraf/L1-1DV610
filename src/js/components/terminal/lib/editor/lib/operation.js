@@ -28,9 +28,6 @@ export class Operation {
           case MathematicalOperations.SUBTRACT:
             finalValue -= variable.getValue()
             break
-          case MathematicalOperations.MULTIPLY:
-            finalValue *= variable.getValue()
-            break
           default:
             throw new Error(`Fatal Error: invalid operator supplied. Operation index: ${variable.getOperation()}`)
         }
@@ -50,7 +47,7 @@ export class Operation {
   /**
    * Returns a function that when invoked will directly modify the value of the given string pointer destination.
    *
-   * @param {dataTypes.Integer} dest - The pointer to the string destination.
+   * @param {dataTypes.String} dest - The pointer to the string destination.
    * @param  {...OperationPair} variables - The variables used in the modification.
    * @returns {Function} - The constructed function.
    */

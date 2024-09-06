@@ -74,7 +74,6 @@ export class EngineCompiler extends EventTarget {
     // Determine operation logic.
     const operationVariables = operation.split(' ').map((x) => x.trim())
 
-    const memoryDependencies = [intPointer]
     const operationPairs = []
     let operationSymbol = ''
 
@@ -111,7 +110,6 @@ export class EngineCompiler extends EventTarget {
           throw new Error(`No reference for ${val} found.`)
         }
 
-        memoryDependencies.push(tempMemoryRef[0])
         val = tempMemoryRef[0]
       }
 
@@ -121,7 +119,7 @@ export class EngineCompiler extends EventTarget {
 
     // Build final operation string.
     const finalOperation = Operation.constructIntModification(intPointer, ...operationPairs)
-    return new ExecutableBlock(memoryDependencies, finalOperation)
+    return new ExecutableBlock(finalOperation)
   }
 
   /**
@@ -153,7 +151,6 @@ export class EngineCompiler extends EventTarget {
     // Determine operation logic.
     const operationVariables = operation.match(/"[^"]*"|'[^']*'|[^"' ]+/g)
 
-    const memoryDependencies = [variableID]
     const operationPairs = []
     let operationSymbol = ''
 
@@ -189,7 +186,6 @@ export class EngineCompiler extends EventTarget {
           throw new Error(`No reference for ${val} found.`)
         }
 
-        memoryDependencies.push(tempMemoryRef[0])
         val = tempMemoryRef[0]
       } else {
         // Remove either single or double quote depending on what the string is constructed with.
@@ -206,7 +202,7 @@ export class EngineCompiler extends EventTarget {
 
     // Build final operation string.
     const finalOperation = Operation.constructStringModification(stringPointer, ...operationPairs)
-    return new ExecutableBlock(memoryDependencies, finalOperation)
+    return new ExecutableBlock(finalOperation)
   }
 
   /**
@@ -226,13 +222,11 @@ export class EngineCompiler extends EventTarget {
 
     // Determine operation logic.
     const operationVariables = expression.match(/"[^"]*"|'[^']*'|\d+|[+]|[^"' ]+/g)
-    const memoryDependencies = []
     const operationPairs = []
     let operationSymbol = ''
 
     // We need a temp pointer in order to store the modification.
     const tempString = new dataTypes.CharacterCollection('', 'temp')
-    memoryDependencies.push(tempString)
 
     for (let i = 0; i < operationVariables.length; i++) {
       if (i === 0) {
@@ -267,7 +261,6 @@ export class EngineCompiler extends EventTarget {
           throw new Error(`No reference for ${val} found.`)
         }
 
-        memoryDependencies.push(tempMemoryRef[0])
         val = tempMemoryRef[0]
       } else {
         // Remove either single or double quote depending on what the string is constructed with.
@@ -284,10 +277,10 @@ export class EngineCompiler extends EventTarget {
 
     // Construct operation chain.
     const inlineOperation = Operation.constructStringModification(tempString, ...operationPairs)
-    const inlineExecBlock = new ExecutableBlock(memoryDependencies, inlineOperation)
+    const inlineExecBlock = new ExecutableBlock(inlineOperation)
     const outputOperation = Operation.tryGetSystemOperation(command, inlineExecBlock)
 
-    return new ExecutableBlock([], outputOperation)
+    return new ExecutableBlock(outputOperation)
   }
 }
 

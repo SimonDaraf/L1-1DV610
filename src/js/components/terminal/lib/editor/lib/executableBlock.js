@@ -1,15 +1,7 @@
 /**
  * Represents an executable block.
- * Needs a function reference and stores pointer id to indicate memory dependencies.
  */
 export class ExecutableBlock {
-  /**
-   * The memory dependencies needed to execute.
-   *
-   * @type {string[]}
-   */
-  #memoryDependencies
-
   /**
    * The operation to be executed.
    *
@@ -20,24 +12,10 @@ export class ExecutableBlock {
   /**
    * Constructs an instance of a executable block.
    *
-   * The memory dependencies needs to include every memory element accessed during the operation.
-   *
-   * @param {string[]} memoryDependencies - An array of pointer id's to act as memory dependencies.
    * @param {Function} operation - The operation to be executed.
    */
-  constructor (memoryDependencies, operation) {
-    this.#memoryDependencies = memoryDependencies
+  constructor (operation) {
     this.#operation = operation
-  }
-
-  /**
-   * Returns a copy of the memory dependencies.
-   * This method should be used before executing the block as to know which dependencies are needed.
-   *
-   * @returns {string[]} - An array of every memory dependency.
-   */
-  getMemoryDependencies () {
-    return [...this.#memoryDependencies] // return a shallow copy of the array.
   }
 
   /**
