@@ -7,6 +7,7 @@ import { Operation } from './operation.js'
  *
  * @event EngineCompiler#memoryAllocationRequest - Dispatched when a variable needs to be stored in memory.
  * @event EngineCompiler#addToCallStack - Dispatched when an Execution block has been constructed
+ * @event EngineCompiler#requestMemoryReference - Dispatched when the compiler is in need of a memory reference.
  */
 export class EngineCompiler extends EventTarget {
   /**
@@ -73,7 +74,7 @@ export class EngineCompiler extends EventTarget {
     // Determine operation logic.
     const operationVariables = operation.split(' ').map((x) => x.trim())
 
-    const memoryDependencies = [variableID]
+    const memoryDependencies = [intPointer]
     const operationPairs = []
     let operationSymbol = ''
 
@@ -92,10 +93,26 @@ export class EngineCompiler extends EventTarget {
         if (!NamingPatterns.VARIABLE_NAME.test(operationVariables[i])) {
           throw new Error(`${operationVariables[i]} is not a valid variable name.`)
         }
-        // If it is a valid variable name. Add it to the memory dependency.
-        memoryDependencies.push(btoa(operationVariables[i]))
 
-        // add something to access heap and get reference to variable getter.
+        // If it is a valid variable name. Add it to the memory dependency.
+
+        // This hack allows the listener to populate the array with the reference requested.
+        // Better than exposing the heap directly to this class.
+        const tempMemoryRef = []
+        this.dispatchEvent(new CustomEvent('EngineCompiler#requestMemoryReference', {
+          bubbles: true,
+          detail: {
+            memoryHolder: tempMemoryRef,
+            requestID: btoa(operationVariables)
+          }
+        }))
+
+        if (!tempMemoryRef[0]) {
+          throw new Error(`No reference for ${operationVariables[i]} found.`)
+        }
+
+        console.log('memory ref: ' + tempMemoryRef[0])
+        memoryDependencies.push(tempMemoryRef[0])
       }
 
       const operationPair = Operation.createIntOperationPair(operationSymbol, operationVariables[i])
@@ -255,7 +272,7 @@ const OperationPatterns = Object.freeze({
  * An enum containing regex pattern related to declaration formats.
  */
 const DeclarationFormats = Object.freeze({
-  INT_DECLARATION_FORMAT: /^ ?int [a-z][a-zA-Z0-9]* = \d+( [+-] \d+)* ?$/,
+  INT_DECLARATION_FORMAT: /^ ?int [a-z][a-zA-Z0-9]* = (\d+|[a-z][a-zA-Z0-9]*)( [+-] (\d+|[a-z][a-zA-Z0-9]*))* ?$/,
   STRING_DECLARATION_FORMAT: /^ ?string [a-z][a-zA-Z0-9]* = (" *[^"]* *"|' *[^']* *')( [+] (" *[^"]* *"|' *[^']* *'))* ?$/,
   INLINE_OPERATION: /^ ?(" *[^"]* *"|' *[^']* *'|\d+)( [+] (" *[^"]* *"|' *[^']* *'|\d+))* ?$/
 })

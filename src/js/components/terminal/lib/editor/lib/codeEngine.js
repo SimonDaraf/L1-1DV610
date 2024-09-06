@@ -58,6 +58,14 @@ export class CodeEngine extends EventTarget {
       this.#callStack.addExecutableBlock(event.detail.executionBlock)
     })
 
+    this.#engineCompiler.addEventListener('EngineCompiler#requestMemoryReference', (event) => {
+      event.stopPropagation()
+
+      // We get the pointer reference and push it into the holder. This way we avoid exposing the heap to the compiler.
+      const pointer = this.#memoryHeap.getMemoryReference(event.detail.requestID)
+      event.detail.memoryHolder.push(pointer)
+    })
+
     this.#callStack.addEventListener('CallStack#output', (event) => {
       event.stopPropagation()
 
