@@ -54,4 +54,11 @@ export class CallStack extends EventTarget {
       }
     }
   }
+
+  /**
+   * Clears the call stack.
+   */
+  clear () {
+    this.#executableBlocks = []
+  }
 }

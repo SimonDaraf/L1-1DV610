@@ -81,10 +81,15 @@ export class CodeEngine extends EventTarget {
    * @param {string} codeBlock - The code block to be parsed.
    */
   build (codeBlock) {
-    this.#dispatchConsoleOutput('Build started...')
-    this.#memoryHeap.clearMemory()
-    this.#buildMemoryHeap(this.#parse(codeBlock))
-    this.#dispatchConsoleOutput('Build finished...')
+    try {
+      this.#dispatchConsoleOutput('Build started...')
+      this.#memoryHeap.clearMemory()
+      this.#callStack.clear()
+      this.#engineCompiler.compile(this.#parse(codeBlock))
+      this.#dispatchConsoleOutput('Build finished...')
+    } catch (e) {
+      this.#dispatchError(e)
+    }
   }
 
   /**
@@ -95,19 +100,6 @@ export class CodeEngine extends EventTarget {
       this.#dispatchConsoleOutput('Executing...')
       this.#callStack.execute(this.#memoryHeap)
       this.#dispatchConsoleOutput('Done executing...')
-    } catch (e) {
-      this.#dispatchError(e)
-    }
-  }
-
-  /**
-   * Builds the memory heap.
-   *
-   * @param {string[]} parsedData - An array of logical statements.
-   */
-  #buildMemoryHeap (parsedData) {
-    try {
-      this.#engineCompiler.compile(parsedData)
     } catch (e) {
       this.#dispatchError(e)
     }
