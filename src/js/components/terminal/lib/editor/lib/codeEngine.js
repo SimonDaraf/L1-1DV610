@@ -57,6 +57,18 @@ export class CodeEngine extends EventTarget {
 
       this.#callStack.addExecutableBlock(event.detail.executionBlock)
     })
+
+    this.#callStack.addEventListener('CallStack#output', (event) => {
+      event.stopPropagation()
+
+      // Forward output to listeners.
+      this.dispatchEvent(new CustomEvent('CodeEngine#output', {
+        bubbles: true,
+        detail: {
+          message: `Output: ${event.detail.value}`
+        }
+      }))
+    })
   }
 
   /**
@@ -75,9 +87,13 @@ export class CodeEngine extends EventTarget {
    * Executes the call stack.
    */
   run () {
-    this.#dispatchConsoleOutput('Executing...')
-    this.#callStack.execute(this.#memoryHeap)
-    this.#dispatchConsoleOutput('Done executing...')
+    try {
+      this.#dispatchConsoleOutput('Executing...')
+      this.#callStack.execute(this.#memoryHeap)
+      this.#dispatchConsoleOutput('Done executing...')
+    } catch (e) {
+      this.#dispatchError(e)
+    }
   }
 
   /**

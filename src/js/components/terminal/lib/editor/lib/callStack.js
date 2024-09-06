@@ -4,8 +4,10 @@ import { MemoryHeap } from './memoryHeap.js'
 /**
  * Represents a call stack. Holding references to executions to be made.
  * The call stack will operate on a fifo basis.
+ *
+ * @event CallStack#output - Dispatched when a return value should be output to console.
  */
-export class CallStack {
+export class CallStack extends EventTarget {
   /**
    * An array of executable blocks.
    *
@@ -17,6 +19,8 @@ export class CallStack {
    * Constructs an instance of a call stack.
    */
   constructor () {
+    super()
+
     this.#executableBlocks = []
   }
 
@@ -36,9 +40,18 @@ export class CallStack {
    */
   execute (memoryHeap) {
     for (const executable of this.#executableBlocks) {
-      executable.execute()
-    }
+      // Push return object into array.
+      const returnObject = executable.execute()
 
-    console.log(memoryHeap)
+      // Check if value should be output to console.
+      if (returnObject.outputToConsole) {
+        this.dispatchEvent(new CustomEvent('CallStack#output', {
+          bubbles: true,
+          detail: {
+            value: returnObject.value
+          }
+        }))
+      }
+    }
   }
 }
