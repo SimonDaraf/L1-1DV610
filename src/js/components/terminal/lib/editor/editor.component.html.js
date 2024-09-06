@@ -8,8 +8,7 @@ htmlTemplate.innerHTML = /*html*/`
       <button id="button-build">Build</button>
     </div>
     <div class="editor-body">
-      <div id="editor-input" contenteditable="true" spellcheck="false" wrap="off">
-      </div>
+      <div id="editor-input" contenteditable="true" spellcheck="false" wrap="off"></div>
     </div>
     <pre class="editor-console">
     </pre>
