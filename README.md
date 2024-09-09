@@ -1,5 +1,5 @@
 # L1-1DV610
-The source files for L1-1DV610 - The Terminal Editor (WIP)
+The source files for L1-1DV610 - The Useless Code Editor
 
 ## Branching Strategy
 For this project I've decided to start lightly. I will only be working in the main branch.
@@ -33,4 +33,4 @@ Variables as well as new operations can be output to console. One larger example
 
 `<output(name + " is " + age)>`
 
-´Output: Simon is 22´
+`Output: Simon is 22`
